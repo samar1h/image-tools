@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Format Converter</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --card-color: #1e1e1e;
+            --text-color: #e0e0e0;
+            --accent-color: #BB86FC;
+            --error-color: #CF6679;
+            --success-color: #03DAC5;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+        
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 500px;
+            padding: 24px 16px;
+            background-color: var(--card-color);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 24px;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .input-group {
+            margin-bottom: 24px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+        
+        .file-input-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 100%;
+        }
+        
+        .file-drop-area {
+            border: 2px dashed var(--accent-color);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            min-height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .file-drop-area:hover, .file-drop-area.active {
+            background-color: rgba(187, 134, 252, 0.1);
+        }
+        
+        .file-drop-area span {
+            display: block;
+            margin-top: 8px;
+            font-size: 0.85rem;
+            opacity: 0.8;
+        }
+        
+        .file-drop-area input {
+            display: none;
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            min-height: 24px;
+            margin-top: 4px;
+        }
+        
+        select {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            appearance: none;
+        }
+        
+        button {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--accent-color);
+            color: black;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.3s;
+            margin-top: 8px;
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        button:hover:not(:disabled) {
+            opacity: 0.9;
+        }
+        
+        .preview-container {
+            margin-top: 24px;
+            margin-bottom: 24px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .preview-container img {
+            max-width: 100%;
+            max-height: 200px;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+        
+        .message {
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 16px;
+            font-size: 0.9rem;
+            display: none;
+            text-align: center;
+        }
+        
+        .error-message {
+            background-color: rgba(207, 102, 121, 0.2);
+            color: var(--error-color);
+        }
+        
+        .success-message {
+            background-color: rgba(3, 218, 197, 0.2);
+            color: var(--success-color);
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--text-color);
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+            display: none;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Image Format Converter</h1>
+        
+        <div class="input-group">
+            <label for="file-input">Upload Image</label>
+            <div class="file-input-wrapper">
+                <div class="file-drop-area" id="drop-area">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                    <span>Tap to browse or drop image here</span>
+                    <input type="file" id="file-input" accept="image/*">
+                </div>
+                <div class="file-info" id="file-info"></div>
+            </div>
+        </div>
+        
+        <div class="preview-container" id="preview-container" style="display: none;">
+            <label>Preview</label>
+            <img id="image-preview" alt="Preview">
+        </div>
+        
+        <div class="input-group">
+            <label for="format-select">Convert To</label>
+            <select id="format-select">
+                <option value="png">PNG</option>
+                <option value="jpeg">JPEG</option>
+                <option value="webp">WebP</option>
+                <option value="gif">GIF</option>
+                <option value="bmp">BMP</option>
+            </select>
+        </div>
+        
+        <button id="convert-btn" disabled>
+            <span class="loading" id="loading"></span>
+            Convert Image
+        </button>
+        
+        <div class="message error-message" id="error-message"></div>
+        <div class="message success-message" id="success-message"></div>
+    </div>
+
+    <script>
+        // DOM elements
+        const fileInput = document.getElementById('file-input');
+        const dropArea = document.getElementById('drop-area');
+        const fileInfo = document.getElementById('file-info');
+        const formatSelect = document.getElementById('format-select');
+        const convertBtn = document.getElementById('convert-btn');
+        const errorMessage = document.getElementById('error-message');
+        const successMessage = document.getElementById('success-message');
+        const previewContainer = document.getElementById('preview-container');
+        const imagePreview = document.getElementById('image-preview');
+        const loading = document.getElementById('loading');
+        
+        // Variables
+        let currentFile = null;
+        
+        // Event listeners
+        dropArea.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', handleFileSelect);
+        
+        dropArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropArea.classList.add('active');
+        });
+        
+        dropArea.addEventListener('dragleave', () => {
+            dropArea.classList.remove('active');
+        });
+        
+        dropArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropArea.classList.remove('active');
+            if (e.dataTransfer.files.length) {
+                handleFiles(e.dataTransfer.files);
+            }
+        });
+        
+        convertBtn.addEventListener('click', convertImage);
+        
+        // Functions
+        function handleFileSelect(e) {
+            handleFiles(e.target.files);
+        }
+        
+        function handleFiles(files) {
+            resetMessages();
+            
+            if (!files.length) return;
+            
+            const file = files[0];
+            
+            // Check if it's an image
+            if (!file.type.startsWith('image/')) {
+                showError('Please select a valid image file');
+                return;
+            }
+            
+            currentFile = file;
+            fileInfo.textContent = `${file.name} (${formatFileSize(file.size)})`;
+            convertBtn.disabled = false;
+            
+            // Create preview
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                imagePreview.src = e.target.result;
+                previewContainer.style.display = 'flex';
+            };
+            reader.onerror = () => {
+                showError('Failed to read file');
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        function convertImage() {
+            if (!currentFile) return;
+            
+            resetMessages();
+            loading.style.display = 'inline-block';
+            convertBtn.disabled = true;
+            
+            const targetFormat = formatSelect.value;
+            
+            // Get original format
+            const originalFormat = currentFile.type.split('/')[1];
+            
+            // Check if already in target format
+            if (originalFormat.toLowerCase() === targetFormat.toLowerCase()) {
+                showSuccess(`Image is already in ${targetFormat.toUpperCase()} format`);
+                loading.style.display = 'none';
+                convertBtn.disabled = false;
+                return;
+            }
+            
+            // Convert image
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    try {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0);
+                        
+                        // Convert to target format
+                        let mimeType;
+                        switch(targetFormat) {
+                            case 'png':
+                                mimeType = 'image/png';
+                                break;
+                            case 'jpeg':
+                                mimeType = 'image/jpeg';
+                                break;
+                            case 'webp':
+                                mimeType = 'image/webp';
+                                break;
+                            case 'gif':
+                                mimeType = 'image/gif';
+                                break;
+                            case 'bmp':
+                                mimeType = 'image/bmp';
+                                break;
+                            default:
+                                mimeType = 'image/png';
+                        }
+                        
+                        canvas.toBlob(function(blob) {
+                            if (!blob) {
+                                throw new Error('Failed to convert image');
+                            }
+                            
+                            const fileName = currentFile.name.substring(0, currentFile.name.lastIndexOf('.')) || currentFile.name;
+                            const newFileName = `${fileName}.${targetFormat}`;
+                            
+                            // Download converted image
+                            const link = document.createElement('a');
+                            link.href = URL.createObjectURL(blob);
+                            link.download = newFileName;
+                            link.click();
+                            
+                            // Clean up
+                            URL.revokeObjectURL(link.href);
+                            showSuccess(`Converted to ${targetFormat.toUpperCase()} successfully`);
+                            
+                        }, mimeType, 1.0);
+                    } catch (error) {
+                        showError('Error converting image: ' + error.message);
+                    } finally {
+                        loading.style.display = 'none';
+                        convertBtn.disabled = false;
+                    }
+                };
+                
+                img.onerror = function() {
+                    showError('Failed to load image for conversion');
+                    loading.style.display = 'none';
+                    convertBtn.disabled = false;
+                };
+                
+                img.src = e.target.result;
+            };
+            
+            reader.onerror = function() {
+                showError('Failed to read file');
+                loading.style.display = 'none';
+                convertBtn.disabled = false;
+            };
+            
+            reader.readAsDataURL(currentFile);
+        }
+        
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+            successMessage.style.display = 'none';
+        }
+        
+        function showSuccess(message) {
+            successMessage.textContent = message;
+            successMessage.style.display = 'block';
+            errorMessage.style.display = 'none';
+        }
+        
+        function resetMessages() {
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+        }
+    </script>
+</body>
+</html>
